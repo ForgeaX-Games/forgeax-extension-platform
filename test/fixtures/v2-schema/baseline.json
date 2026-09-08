@@ -1,0 +1,37 @@
+{
+  "manifest": {
+    "schemaVersion": 2,
+    "id": "forgeax.editor.baseline",
+    "version": "1.0.0",
+    "displayName": "Editor baseline",
+    "categories": ["editor"],
+    "entrypoints": {"runtime": "dist/runtime.js"},
+    "contributes": [{"id": "editor.open", "type": "editor", "title": "Open editor", "activation": "on-demand"}],
+    "permissions": ["project.read"],
+    "apiCompatibility": {"platform": ">=0.1.0 <1.0.0", "protocol": "1"}
+  },
+  "lock": {
+    "schemaVersion": 2,
+    "id": "forgeax.editor.baseline",
+    "version": "1.0.0",
+    "variant": "universal",
+    "sha256": "sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "manifestDigest": "sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "signerPolicy": {"issuer": "https://token.actions.githubusercontent.com", "subject": "repo:ForgeaX-Games/forgeax-marketplace:ref:refs/heads/main", "keyId": "sigstore", "required": true},
+    "source": {"kind": "marketplace", "catalogId": "forgeax.editor.baseline", "releaseTag": "forgeax.editor.baseline@1.0.0"}
+  },
+  "report": {
+    "version": 1,
+    "status": "ready",
+    "diagnostics": [{"kind": "extension", "id": "forgeax.editor.baseline", "version": "1.0.0", "phase": "product-ready", "status": "ready", "required": true}]
+  },
+  "health": {
+    "version": 1,
+    "serviceId": "forgeax-server",
+    "serviceVersion": "1.0.0",
+    "status": "ready",
+    "protocol": {"min": "1", "max": "1"},
+    "ready": true,
+    "restartable": true
+  }
+}

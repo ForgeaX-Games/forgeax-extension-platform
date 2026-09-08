@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "types": ["bun", "node"],
+    "declaration": false,
+    "noEmit": true
+  },
+  "include": ["src", "scripts"],
+  // Tests are transpiled by vitest, not type-gated — same posture as both
+  // upstream foundations (bun:test / vitest transpile without typecheck).
+  "exclude": ["**/*.test.ts", "**/__tests__/**"]
+}

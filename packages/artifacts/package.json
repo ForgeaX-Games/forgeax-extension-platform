@@ -1,0 +1,25 @@
+{
+  "name": "@forgeax/extension-artifacts",
+  "version": "0.1.1",
+  "description": "Deterministic self-contained FXE artifact packing and verification",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck --verbatimModuleSyntax src/*.ts src/**/*.ts",
+    "test": "bun test test/*.test.ts",
+    "build": "tsup src/index.ts --format esm --dts --outDir dist"
+  },
+  "private": true
+}

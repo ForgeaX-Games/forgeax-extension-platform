@@ -1,0 +1,36 @@
+{
+  "name": "@forgeax/extension-sdk",
+  "version": "0.1.1",
+  "description": "ForgeaX Extension authoring and FXE pack CLI",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./pack": {
+      "types": "./dist/pack.d.ts",
+      "import": "./dist/pack.js"
+    }
+  },
+  "bin": {
+    "forgeax-extension": "./bin/forgeax-extension.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck --verbatimModuleSyntax src/*.ts",
+    "test": "bun test test/*.test.ts",
+    "build": "tsup src/index.ts src/pack.ts --format esm --dts --outDir dist"
+  },
+  "dependencies": {
+    "@forgeax/extension-artifacts": "workspace:*"
+  },
+  "private": true
+}

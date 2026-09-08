@@ -1,0 +1,5 @@
+{
+  "legacyManifest": {"kind": "legacy", "provides": {"legacy": true}},
+  "badDigestLock": {"schemaVersion": 2, "id": "forgeax.bad", "version": "1.0.0", "variant": "universal", "sha256": "not-a-digest", "manifestDigest": "sha256-short", "signerPolicy": {"issuer": "", "subject": "", "required": true}, "source": {"kind": "url", "url": "https://example.invalid/a.fxe"}},
+  "incompatibleManifest": {"schemaVersion": 2, "id": "forgeax.bad", "version": "1.0.0", "displayName": "Bad", "categories": ["canvas"], "entrypoints": {"runtime": "dist/runtime.js"}, "permissions": [], "apiCompatibility": {"platform": "", "protocol": "2"}}
+}

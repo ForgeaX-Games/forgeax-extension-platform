@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "registry": "https://registry.npmjs.org/",
+  "channel": "stable",
+  "packages": {
+    "@forgeax/extension-platform": "0.2.4"
+  }
+}

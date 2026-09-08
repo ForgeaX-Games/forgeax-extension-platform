@@ -1,0 +1,33 @@
+{
+  "name": "@forgeax/platform-io",
+  "version": "0.1.0",
+  "description": "Browser-safe resource, asset, and preference IO abstractions",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./api": {
+      "types": "./dist/api/index.d.ts",
+      "import": "./dist/api/index.js"
+    },
+    "./resource-substrate": {
+      "types": "./dist/resource-substrate/index.d.ts",
+      "import": "./dist/resource-substrate/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck --verbatimModuleSyntax src/*.ts src/api/*.ts src/resource-substrate/*.ts",
+    "test": "bun test src/*.test.ts",
+    "build": "tsup src/index.ts src/api/index.ts src/resource-substrate/index.ts --format esm --dts --outDir dist"
+  },
+  "private": true
+}

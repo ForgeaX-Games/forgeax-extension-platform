@@ -1,0 +1,25 @@
+{
+  "name": "@forgeax/design",
+  "version": "0.1.0",
+  "description": "Reusable ForgeaX visual tokens and primitive contracts",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --strict --skipLibCheck --verbatimModuleSyntax src/*.ts",
+    "test": "bun test test/*.test.ts",
+    "build": "tsup src/index.ts --format esm --dts --outDir dist"
+  },
+  "private": true
+}

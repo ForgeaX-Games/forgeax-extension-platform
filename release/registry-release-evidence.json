@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "registry": "https://registry.npmjs.org/",
+  "status": "pending-external-promotion",
+  "required": "Each public package must be published once from protected main; the npm version, tarball digest, and registry integrity are immutable.",
+  "packages": [
+    {"name": "@forgeax/extension-contracts", "version": "0.1.0", "registry": "pending", "mainCommit": "pending-protected-main-promotion", "immutable": false},
+    {"name": "@forgeax/extension-artifacts", "version": "0.1.0", "registry": "pending", "mainCommit": "pending-protected-main-promotion", "immutable": false},
+    {"name": "@forgeax/extension-sdk", "version": "0.1.0", "registry": "pending", "mainCommit": "pending-protected-main-promotion", "immutable": false},
+    {"name": "@forgeax/extension-platform", "version": "0.1.0", "registry": "pending", "mainCommit": "pending-protected-main-promotion", "immutable": false},
+    {"name": "@forgeax/extension-transport", "version": "0.1.0", "registry": "pending", "mainCommit": "pending-protected-main-promotion", "immutable": false},
+    {"name": "@forgeax/design", "version": "0.1.0", "registry": "pending", "mainCommit": "pending-protected-main-promotion", "immutable": false},
+    {"name": "@forgeax/platform-io", "version": "0.1.0", "registry": "pending", "mainCommit": "pending-protected-main-promotion", "immutable": false}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "packages": [
+    {"name": "@forgeax/extension-contracts", "version": "0.1.0"},
+    {"name": "@forgeax/extension-artifacts", "version": "0.1.0"},
+    {"name": "@forgeax/extension-sdk", "version": "0.1.0"},
+    {"name": "@forgeax/extension-platform", "version": "0.1.0"},
+    {"name": "@forgeax/extension-transport", "version": "0.1.0"},
+    {"name": "@forgeax/design", "version": "0.1.0"},
+    {"name": "@forgeax/platform-io", "version": "0.1.0"}
+  ]
+}

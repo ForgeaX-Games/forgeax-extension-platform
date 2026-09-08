@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "repository": "ForgeaX-Games/forgeax-extension-platform",
+  "sourceCommit": "33a39c3a6e84fcc27249b5bff8062ddcd605d470",
+  "registry": "https://registry.npmjs.org/",
+  "publishMode": "preflight-only",
+  "packages": [
+    { "name": "@forgeax/extension-contracts", "version": "0.1.0", "path": "packages/contracts", "sourceCommit": "33a39c3a6e84fcc27249b5bff8062ddcd605d470" },
+    { "name": "@forgeax/design", "version": "0.1.0", "path": "packages/design", "sourceCommit": "33a39c3a6e84fcc27249b5bff8062ddcd605d470" },
+    { "name": "@forgeax/extension-transport", "version": "0.1.0", "path": "packages/transport", "sourceCommit": "33a39c3a6e84fcc27249b5bff8062ddcd605d470" },
+    { "name": "@forgeax/platform-io", "version": "0.1.0", "path": "packages/platform-io", "sourceCommit": "33a39c3a6e84fcc27249b5bff8062ddcd605d470" }
+  ]
+}
