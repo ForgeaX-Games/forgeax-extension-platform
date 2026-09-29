@@ -47,6 +47,8 @@ export type { CommandDescriptor, CommandsRegistry } from './commands';
 export { createContextKeys } from './context-keys';
 export type { ContextKeysApi } from './context-keys';
 
+export { evaluateContextExpression, getContextExpressionKeys } from './context-expression';
+
 export { createStorageApi } from './storage';
 export type { StorageApi } from './storage';
 

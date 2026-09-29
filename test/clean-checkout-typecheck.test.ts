@@ -9,6 +9,15 @@ const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 };
 
 describe('clean checkout typecheck contract', () => {
+  it('installs Node explicitly before executing Node-shebang build tools in CI', () => {
+    const workflow = readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8');
+    expect(workflow).toMatch(/uses: actions\/setup-node@/u);
+    expect(workflow.indexOf('uses: actions/setup-node@')).toBeLessThan(
+      workflow.indexOf('run: bun run typecheck'),
+    );
+    expect(workflow).toMatch(/node-version: ['"]?22/u);
+  });
+
   it('builds source dependencies before workspace typechecking', () => {
     const command = packageJson.scripts?.typecheck ?? '';
     expect(command.indexOf('tsc --noEmit -p tsconfig.json')).toBeGreaterThanOrEqual(0);

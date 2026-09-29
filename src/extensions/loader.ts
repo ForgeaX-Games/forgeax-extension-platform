@@ -12,7 +12,8 @@ import type { ExtensionManifest } from './manifest';
  *   automatically when capabilities later appear.
  * - On capability removal, dependent extensions are cleaned up and pushed
  *   back into `pending`.
- * - `unload()` cleans up all active extensions in reverse activation order.
+ * - `unload()` cleans up owned records in reverse setup order, including
+ *   explicitly retained rollback-only records from failed setup.
  *
  * Merged superset of the two upstream foundations (2026-07-20, ADR 0026):
  * arrival's class body (error-sink isolation, devMode default from
@@ -21,6 +22,42 @@ import type { ExtensionManifest } from './manifest';
  */
 
 const PENDING_WARN_DELAY_MS = 30_000;
+
+/**
+ * Explicit cleanup barrier. Throw only BEFORE destructive teardown, when the
+ * same cleanup can safely be retried. Ordinary cleanup failures are isolated
+ * and retired as before; they must never be treated as retryable by default.
+ */
+export class ExtensionCleanupDeferredError extends Error {
+  constructor(message = 'Extension cleanup is not ready') {
+    super(message);
+    this.name = 'ExtensionCleanupDeferredError';
+  }
+}
+
+/** unload() did not finish; the deferred record and earlier records remain. */
+export class ExtensionUnloadDeferredError extends Error {
+  constructor(readonly extensionId: string) {
+    super(`Extension unload deferred by "${extensionId}"`);
+    this.name = 'ExtensionUnloadDeferredError';
+  }
+}
+
+/**
+ * A failed setup still owns contributions whose rollback hit a safe barrier.
+ * The loader retains this callable for teardown only: setup has NOT succeeded,
+ * and its declared capabilities must not be published. Rollback uses the same
+ * explicit cleanup-deferral contract; ordinary rollback errors are not retried.
+ */
+export class ExtensionSetupRollbackDeferredError extends Error {
+  readonly rollback: Cleanup;
+
+  constructor(options: { cause: unknown; rollback: Cleanup }) {
+    super('Extension setup failed with deferred rollback', { cause: options.cause });
+    this.name = 'ExtensionSetupRollbackDeferredError';
+    this.rollback = options.rollback;
+  }
+}
 
 export interface ExtensionLoaderOptions<Ctx, C extends string> {
   readonly capabilities: CapabilityRegistry<C>;
@@ -41,6 +78,7 @@ interface ActiveRecord<Ctx, C extends string> {
   readonly manifest: ExtensionManifest<C, Ctx>;
   readonly cleanup: Cleanup | undefined;
   readonly order: number;
+  readonly rollbackOnly?: boolean;
 }
 
 export class ExtensionLoader<Ctx, C extends string> {
@@ -50,6 +88,8 @@ export class ExtensionLoader<Ctx, C extends string> {
   private readonly devMode: boolean;
 
   private readonly pending = new Map<string, ExtensionManifest<C, Ctx>>();
+  // Owned teardown records include rollback-only failed setups. getActive()
+  // deliberately excludes those records: they never completed activation.
   private readonly active = new Map<string, ActiveRecord<Ctx, C>>();
   private readonly activeOrder: string[] = [];
   private readonly declarationOrder = new Map<string, number>();
@@ -93,19 +133,23 @@ export class ExtensionLoader<Ctx, C extends string> {
     return this.enqueue(() => this.scanAndActivate());
   }
 
-  unload(): Promise<void> {
-    return this.enqueue(async () => {
-      for (const id of this.pending.keys()) this.clearPendingTimer(id);
-      this.pending.clear();
-
+  async unload(): Promise<void> {
+    let deferredId: string | undefined;
+    await this.enqueue(async () => {
       const order = [...this.activeOrder].reverse();
       for (const id of order) {
         const rec = this.active.get(id);
         if (!rec) continue;
-        await this.runCleanup(rec);
+        if (!await this.runCleanup(rec)) {
+          deferredId = id;
+          return;
+        }
         this.active.delete(id);
+        const index = this.activeOrder.indexOf(id);
+        if (index >= 0) this.activeOrder.splice(index, 1);
       }
-      this.activeOrder.length = 0;
+      for (const id of this.pending.keys()) this.clearPendingTimer(id);
+      this.pending.clear();
       this.declarationOrder.clear();
       this.nextOrder = 0;
 
@@ -114,6 +158,9 @@ export class ExtensionLoader<Ctx, C extends string> {
       this.capAddedUnsub = undefined;
       this.capRemovedUnsub = undefined;
     });
+    // enqueue intentionally isolates failures. Surface this explicit outcome
+    // separately so a host cannot mistake a deferred teardown for completion.
+    if (deferredId !== undefined) throw new ExtensionUnloadDeferredError(deferredId);
   }
 
   getPending(): ReadonlyArray<ExtensionManifest<C, Ctx>> {
@@ -122,7 +169,10 @@ export class ExtensionLoader<Ctx, C extends string> {
 
   getActive(): ReadonlyArray<ExtensionManifest<C, Ctx>> {
     return this.activeOrder
-      .map((id) => this.active.get(id)?.manifest)
+      .map((id) => {
+        const record = this.active.get(id);
+        return record?.rollbackOnly ? undefined : record?.manifest;
+      })
       .filter((m): m is ExtensionManifest<C, Ctx> => m !== undefined);
   }
 
@@ -188,7 +238,16 @@ export class ExtensionLoader<Ctx, C extends string> {
       const result = await m.setup(ctx);
       if (typeof result === 'function') cleanup = result as Cleanup;
     } catch (cause) {
-      const err = new ExtensionSetupError({ extensionId: m.id, phase: 'setup', cause });
+      if (cause instanceof ExtensionSetupRollbackDeferredError) {
+        this.active.set(m.id, {
+          manifest: m, cleanup: cause.rollback, order: this.nextOrder++, rollbackOnly: true,
+        });
+        this.activeOrder.push(m.id);
+      }
+      const err = new ExtensionSetupError({
+        extensionId: m.id, phase: 'setup',
+        cause: cause instanceof ExtensionSetupRollbackDeferredError ? cause.cause : cause,
+      });
       this.reportError(err, m, 'setup');
       return;
     }
@@ -212,17 +271,19 @@ export class ExtensionLoader<Ctx, C extends string> {
     if (victims.length === 0) return;
     // Cleanup in reverse activation order, then push back into pending.
     for (const rec of victims.slice().sort((a, b) => b.order - a.order)) {
-      await this.runCleanup(rec);
+      if (!await this.runCleanup(rec)) return;
       this.active.delete(rec.manifest.id);
       const idx = this.activeOrder.indexOf(rec.manifest.id);
       if (idx >= 0) this.activeOrder.splice(idx, 1);
-      this.pending.set(rec.manifest.id, rec.manifest);
-      this.startPendingTimer(rec.manifest);
+      if (!rec.rollbackOnly) {
+        this.pending.set(rec.manifest.id, rec.manifest);
+        this.startPendingTimer(rec.manifest);
+      }
     }
   }
 
-  private async runCleanup(rec: ActiveRecord<Ctx, C>): Promise<void> {
-    if (!rec.cleanup) return;
+  private async runCleanup(rec: ActiveRecord<Ctx, C>): Promise<boolean> {
+    if (!rec.cleanup) return true;
     try {
       await rec.cleanup();
     } catch (cause) {
@@ -232,7 +293,9 @@ export class ExtensionLoader<Ctx, C extends string> {
         cause,
       });
       this.reportError(err, rec.manifest, 'cleanup');
+      if (cause instanceof ExtensionCleanupDeferredError) return false;
     }
+    return true;
   }
 
   private reportError(
